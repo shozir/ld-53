@@ -26,34 +26,40 @@ app.ticker.add(delta => {
 let input = 0;
 
 document.addEventListener('keydown', event => {
-  if (event.code === 'KeyW' || event.code === 'ArrowUp') {
+  if (event.code == 'KeyW' || event.code == 'ArrowUp') {
     input |= Input.Up;
   }
-  if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+  if (event.code == 'KeyS' || event.code == 'ArrowDown') {
     input |= Input.Down;
   }
-  if (event.code === 'KeyA' || event.code === 'ArrowLeft') {
+  if (event.code == 'KeyA' || event.code == 'ArrowLeft') {
     input |= Input.Left;
   }
-  if (event.code === 'KeyD' || event.code === 'ArrowRight') {
+  if (event.code == 'KeyD' || event.code == 'ArrowRight') {
     input |= Input.Right;
+  }
+  if (event.code == 'Space') {
+    input |= Input.Action;
   }
 
   game.handleInput(input);
 });
 
 document.addEventListener('keyup', event => {
-  if ((event.code === 'KeyW' || event.code === 'ArrowUp')) {
+  if ((event.code == 'KeyW' || event.code == 'ArrowUp')) {
     input ^= Input.Up;
   }
-  if (event.code === 'KeyS' || event.code === 'ArrowDown') {
+  if (event.code == 'KeyS' || event.code == 'ArrowDown') {
     input ^= Input.Down;
   }
-  if (event.code === 'KeyA' || event.code === 'ArrowLeft') {
+  if (event.code == 'KeyA' || event.code == 'ArrowLeft') {
     input ^= Input.Left;
   }
-  if (event.code === 'KeyD' || event.code === 'ArrowRight') {
+  if (event.code == 'KeyD' || event.code == 'ArrowRight') {
     input ^= Input.Right;
+  }
+  if (event.code == 'Space') {
+    input ^= Input.Action;
   }
 
   game.handleInput(input);

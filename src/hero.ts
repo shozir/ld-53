@@ -23,8 +23,9 @@ export class Hero {
   private readonly walkingFrontSprite = AnimatedSprite.fromImages([charWalkingFront1, charWalkingFront2, charWalkingFront3, charWalkingFront4]);
   private readonly walkingBackSprite = AnimatedSprite.fromImages([charWalkingBack1, charWalkingBack2, charWalkingBack3, charWalkingBack4]);
   private input = 0;
-  
+
   readonly container = new Container();
+  readonly move = new Point();
 
   initialize(graphics: Graphics) {
     this.container.addChild(this.idleContainer, this.walkingContainer);
@@ -62,8 +63,9 @@ export class Hero {
       -((this.input >> 2) & 1) + ((this.input >> 3) & 1),
       -((this.input >> 0) & 1) + ((this.input >> 1) & 1)
     );
-    const length = Math.sqrt(offset.x * offset.x + offset.y * offset.y);
-    if (length > 0) {
+    const sqLength = offset.x * offset.x + offset.y * offset.y;
+    if (sqLength > 0) {
+      const length = Math.sqrt(sqLength);
       offset.x /= length;
       offset.y /= length;
       this.container.x += offset.x * delta * moveSpeed;
