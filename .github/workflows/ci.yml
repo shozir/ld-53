@@ -1,0 +1,31 @@
+name: ci
+
+on: push
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+    - run: npm ci
+    - run: npm run build
+    - uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+    - uses: jdno/setup-butler@v1
+    - run: ls
+    - run: butler push dist shizor/ld-53:html5
+      env:
+        BUTLER_API_KEY: ${{ secrets.ITCHIO_API_KEY }}
