@@ -87,9 +87,9 @@ export class Game {
         const packageIdx = remainingColCheckPackages.indexOf(box);
         remainingColCheckPackages.splice(packageIdx, 1);
         for (const otherBox of remainingColCheckPackages) {
-          box.collisionCheckPackage(delta, otherBox.sprite);
+          box.collisionCheckPackage(delta, otherBox);
         }
-        box.collisionCheckPlayer(this.player.container);
+        box.collisionCheckPlayer(delta, this.player.container);
       }
     }
   }

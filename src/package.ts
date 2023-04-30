@@ -1,18 +1,22 @@
-import { Bounds, Graphics, IPointData, Sprite, Texture } from 'pixi.js';
+import { Bounds, Graphics, IPointData, Sprite } from 'pixi.js';
 import { playerSize } from './player';
+import box1 from './assets/Box1.png';
+import box2 from './assets/Box2.png';
 
 const size = 16;
 const minPlayerDistance = (playerSize / 2) + (size / 2);
 const colModifier = 20;
+const rotModifier = .5;
 
 export class Package {
-  readonly sprite = Sprite.from(Texture.WHITE);
+  readonly sprite = Sprite.from(Math.random() < .5 ? box1 : box2);
+  readonly rotClockwise = Math.random() < .5;
 
   initialize(graphics: Graphics) {
     this.sprite.width = size;
     this.sprite.height = size;
     this.sprite.anchor.set(.5);
-    this.sprite.tint = 0xff0000;
+    this.sprite.rotation = Math.random() * 2 * Math.PI;
 
     graphics.addChild(this.sprite);
   }
@@ -27,22 +31,24 @@ export class Package {
     this.sprite.y = (1 - yRand) * spawnBounds.minY + yRand * spawnBounds.maxY;
   }
 
-  collisionCheckPackage(delta: number, box: Sprite) {
-    const xDiff = box.x - this.sprite.x;
-    const yDiff = box.y - this.sprite.y;
+  collisionCheckPackage(delta: number, otherPackage: Package) {
+    const xDiff = otherPackage.sprite.x - this.sprite.x;
+    const yDiff = otherPackage.sprite.y - this.sprite.y;
     const sqDist = xDiff * xDiff + yDiff * yDiff;
     if (sqDist < size * size) {
       const dist = Math.sqrt(sqDist);
       const origSpriteX = this.sprite.x;
       const origSpriteY = this.sprite.y;
-      this.sprite.x = this.sprite.x + ((this.sprite.x - box.x) / dist) * delta * colModifier;
-      this.sprite.y = this.sprite.y + ((this.sprite.y - box.y) / dist) * delta * colModifier;
-      box.x = box.x + ((box.x - origSpriteX) / dist) * delta * colModifier;
-      box.y = box.y + ((box.y - origSpriteY) / dist) * delta * colModifier;
+      this.sprite.x = this.sprite.x + ((this.sprite.x - otherPackage.sprite.x) / dist) * delta * colModifier;
+      this.sprite.y = this.sprite.y + ((this.sprite.y - otherPackage.sprite.y) / dist) * delta * colModifier;
+      this.sprite.rotation += (this.rotClockwise ? 1 : -1) * delta * rotModifier;
+      otherPackage.sprite.x = otherPackage.sprite.x + ((otherPackage.sprite.x - origSpriteX) / dist) * delta * colModifier;
+      otherPackage.sprite.y = otherPackage.sprite.y + ((otherPackage.sprite.y - origSpriteY) / dist) * delta * colModifier;
+      otherPackage.sprite.rotation += (otherPackage.rotClockwise ? 1 : -1) * delta * rotModifier;
     }
   }
 
-  collisionCheckPlayer(playerPos: IPointData) {
+  collisionCheckPlayer(delta: number, playerPos: IPointData) {
     const xDiff = playerPos.x - this.sprite.x;
     const yDiff = playerPos.y - this.sprite.y;
     const sqDist = xDiff * xDiff + yDiff * yDiff;
@@ -50,6 +56,7 @@ export class Package {
       const dist = Math.sqrt(sqDist);
       this.sprite.x = playerPos.x - (xDiff / dist) * minPlayerDistance;
       this.sprite.y = playerPos.y - (yDiff / dist) * minPlayerDistance;
+      this.sprite.rotation += (this.rotClockwise ? 1 : -1) * delta * rotModifier;
     }
   }
 
