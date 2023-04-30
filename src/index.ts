@@ -1,5 +1,7 @@
-import { Application, Graphics } from 'pixi.js';
+import { Application, BaseTexture, Graphics, SCALE_MODES } from 'pixi.js';
 import { Game, Input } from './game';
+
+BaseTexture.defaultOptions.scaleMode = SCALE_MODES.NEAREST;
 
 const app = new Application({
   width: 360,
@@ -10,6 +12,7 @@ document.body.appendChild(app.view as any);
 document.body.style.margin = '0';
 
 app.stage.setTransform(app.screen.width / 2, app.screen.height / 2);
+app.renderer
 
 const graphics = new Graphics();
 app.stage.addChild(graphics);

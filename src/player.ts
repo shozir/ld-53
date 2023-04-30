@@ -15,7 +15,9 @@ import { Input } from './game';
 
 const moveSpeed = 100;
 
-export class Hero {
+export const playerSize = 32;
+
+export class Player {
   private readonly idleContainer = new Container();
   private readonly walkingContainer = new Container();
   private readonly idleFrontSprite = AnimatedSprite.fromImages([charIdleFront1, charIdleFront2]);
@@ -32,23 +34,19 @@ export class Hero {
     this.idleContainer.addChild(this.idleFrontSprite, this.idleBackSprite);
     this.walkingContainer.addChild(this.walkingFrontSprite, this.walkingBackSprite);
 
-    this.idleFrontSprite.anchor.x = .5;
-    this.idleFrontSprite.anchor.y = .5;
+    this.idleFrontSprite.anchor.set(.5);
     this.idleFrontSprite.animationSpeed = .05;
     this.idleFrontSprite.play();
 
-    this.idleBackSprite.anchor.x = .5;
-    this.idleBackSprite.anchor.y = .5;
+    this.idleBackSprite.anchor.set(.5);
     this.idleBackSprite.animationSpeed = .05;
     this.idleBackSprite.play();
 
-    this.walkingFrontSprite.anchor.x = .5;
-    this.walkingFrontSprite.anchor.y = .5;
+    this.walkingFrontSprite.anchor.set(.5);
     this.walkingFrontSprite.animationSpeed = .1;
     this.walkingFrontSprite.play();
 
-    this.walkingBackSprite.anchor.x = .5;
-    this.walkingBackSprite.anchor.y = .5;
+    this.walkingBackSprite.anchor.set(.5);
     this.walkingBackSprite.animationSpeed = .1;
     this.walkingBackSprite.play();
 

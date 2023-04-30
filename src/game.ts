@@ -1,5 +1,6 @@
-import { Bounds, Container, Graphics, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { Hero } from './hero';
+import { Bounds, Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Player } from './player';
+import { Package } from './package';
 
 export enum Input {
   Up = 1 << 0,
@@ -12,29 +13,28 @@ export enum Input {
 export class Game {
   private readonly text = new Text('', new TextStyle({ fill: 'white' }));
   private readonly playArea = new Bounds();
-  private readonly hero = new Hero();
-  private readonly packages = new Container();
-  private readonly package = Sprite.from(Texture.WHITE);
+  private readonly player = new Player();
+  private readonly packages: Package[] = [];
   private timer = 0;
   private actionDown = false;
 
   initialize(graphics: Graphics) {
-    this.playArea.addPoint({ x: -120, y: -200 });
-    this.playArea.addPoint({ x: 120, y: -200 });
-    this.playArea.addPoint({ x: 120, y: 200 });
-    this.playArea.addPoint({ x: -120, y: 200 });
+    graphics.scale.x = 2;
+    graphics.scale.y = 2;
 
-    this.package.width = 32;
-    this.package.height = 32;
-    this.package.anchor.x = .5;
-    this.package.anchor.y = .5;
-    this.package.x = 40;
-    this.package.tint = 0xff0000;
-    this.packages.addChild(this.package);
+    this.playArea.addPoint({ x: -60, y: -100 });
+    this.playArea.addPoint({ x: 60, y: -100 });
+    this.playArea.addPoint({ x: 60, y: 100 });
+    this.playArea.addPoint({ x: -60, y: 100 });
 
-    graphics.addChild(this.packages);
+    for (let i = 0; i < 30; ++i) {
+      const box = new Package();
+      box.initialize(graphics);
+      box.spawn(this.playArea);
+      this.packages.push(box);
+    }
 
-    this.hero.initialize(graphics);
+    this.player.initialize(graphics);
 
     // graphics.addChild(this.text);
 
@@ -44,21 +44,35 @@ export class Game {
 
   update(delta: number) {
     this.timer += delta;
-    this.hero.update(delta);
+    this.player.update(delta);
 
-    if (this.hero.container.x < this.playArea.minX) this.hero.container.x = this.playArea.minX;
-    if (this.hero.container.x > this.playArea.maxX) this.hero.container.x = this.playArea.maxX;
-    if (this.hero.container.y < this.playArea.minY) this.hero.container.y = this.playArea.minY;
-    if (this.hero.container.y > this.playArea.maxY) this.hero.container.y = this.playArea.maxY;
+    if (this.player.container.x < this.playArea.minX) this.player.container.x = this.playArea.minX;
+    if (this.player.container.x > this.playArea.maxX) this.player.container.x = this.playArea.maxX;
+    if (this.player.container.y < this.playArea.minY) this.player.container.y = this.playArea.minY;
+    if (this.player.container.y > this.playArea.maxY) this.player.container.y = this.playArea.maxY;
 
-    if (!this.hero.container.children.includes(this.package)) {
-      const xDiff = this.hero.container.x - this.package.x;
-      const yDiff = this.hero.container.y - this.package.y;
-      const sqDist = xDiff * xDiff + yDiff * yDiff;
-      if (sqDist < 32 * 32) {
-        const dist = Math.sqrt(sqDist);
-        this.package.x = this.hero.container.x - (xDiff / dist) * 32;
-        this.package.y = this.hero.container.y - (yDiff / dist) * 32;
+    // if (!this.player.container.children.includes(this.package)) {
+    //   const xDiff = this.player.container.x - this.package.x;
+    //   const yDiff = this.player.container.y - this.package.y;
+    //   const sqDist = xDiff * xDiff + yDiff * yDiff;
+    //   if (sqDist < 24 * 24) {
+    //     const dist = Math.sqrt(sqDist);
+    //     this.package.x = this.player.container.x - (xDiff / dist) * 24;
+    //     this.package.y = this.player.container.y - (yDiff / dist) * 24;
+    //   }
+    // }
+
+    const remainingColCheckPackages = this.packages.slice();
+    for (const box of this.packages) {
+      if (!box.boundCheckPlayArea(this.playArea)) {
+        box.spawn(this.playArea);
+      } else {
+        const packageIdx = remainingColCheckPackages.indexOf(box);
+        remainingColCheckPackages.splice(packageIdx, 1);
+        for (const otherBox of remainingColCheckPackages) {
+          box.collisionCheckPackage(delta, otherBox.sprite);
+        }
+        box.collisionCheckPlayer(this.player.container);
       }
     }
   }
@@ -67,23 +81,23 @@ export class Game {
   }
 
   handleInput(input: Input) {
-    this.hero.handleInput(input);
-    if (input & Input.Action) {
-      if (!this.actionDown) {
-        if (this.hero.container.children.includes(this.package)) {
-          this.packages.addChild(this.package);
-          this.package.x = this.hero.container.x;
-          this.package.y = this.hero.container.y -32;
-        } else {
-          this.hero.container.addChild(this.package);
-          this.package.x = 0;
-          this.package.y = -32;
-        }
-      }
+    this.player.handleInput(input);
+    // if (input & Input.Action) {
+    //   if (!this.actionDown) {
+    //     if (this.player.container.children.includes(this.package)) {
+    //       this.packages.addChild(this.package);
+    //       this.package.x = this.player.container.x;
+    //       this.package.y = this.player.container.y -24;
+    //     } else {
+    //       this.player.container.addChild(this.package);
+    //       this.package.x = 0;
+    //       this.package.y = -24;
+    //     }
+    //   }
 
-      this.actionDown = true;
-    } else {
-      this.actionDown = false;
-    }
+    //   this.actionDown = true;
+    // } else {
+    //   this.actionDown = false;
+    // }
   }
 }
