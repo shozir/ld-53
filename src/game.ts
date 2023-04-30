@@ -1,6 +1,7 @@
-import { Bounds, Container, Graphics, Text, TextStyle } from 'pixi.js';
+import { Bounds, Graphics, Text, TextStyle } from 'pixi.js';
 import { Player } from './player';
 import { Package } from './package';
+import { Conveyor, speed as conveyorSpeed } from './conveyor';
 
 export enum Input {
   Up = 1 << 0,
@@ -10,7 +11,8 @@ export enum Input {
   Action = 1 << 4,
 };
 
-const conveyorSpeed = 10;
+export const playAreaWidth = 120;
+export const playAreaHeight = 200;
 
 export class Game {
   private readonly text = new Text('', new TextStyle({ fill: 'white' }));
@@ -18,6 +20,8 @@ export class Game {
   private readonly packageSpawnArea = new Bounds();
   private readonly player = new Player();
   private readonly packages: Package[] = [];
+  private readonly conveyor = new Conveyor();
+
   private timer = 0;
   private actionDown = false;
 
@@ -25,17 +29,19 @@ export class Game {
     graphics.scale.x = 2;
     graphics.scale.y = 2;
 
-    this.playArea.addPoint({ x: -60, y: -100 });
-    this.playArea.addPoint({ x: 60, y: -100 });
-    this.playArea.addPoint({ x: 60, y: 100 });
-    this.playArea.addPoint({ x: -60, y: 100 });
+    this.playArea.addPoint({ x: -playAreaWidth / 2, y: -playAreaHeight / 2 });
+    this.playArea.addPoint({ x: playAreaWidth / 2, y: -playAreaHeight / 2 });
+    this.playArea.addPoint({ x: playAreaWidth / 2, y: playAreaHeight / 2 });
+    this.playArea.addPoint({ x: -playAreaWidth / 2, y: playAreaHeight / 2 });
 
     this.packageSpawnArea.addPoint({ x: this.playArea.minX, y: this.playArea.minY });
     this.packageSpawnArea.addPoint({ x: this.playArea.maxX, y: this.playArea.minY });
     this.packageSpawnArea.addPoint({ x: this.playArea.maxX, y: this.playArea.minY / 2 });
     this.packageSpawnArea.addPoint({ x: this.playArea.minX, y: this.playArea.minY / 2 });
 
-    for (let i = 0; i < 30; ++i) {
+    this.conveyor.initialize(graphics);
+
+    for (let i = 0; i < 50; ++i) {
       const box = new Package();
       box.initialize(graphics);
       box.spawn(this.playArea);
@@ -45,13 +51,12 @@ export class Game {
     this.player.initialize(graphics);
 
     // graphics.addChild(this.text);
-
-    graphics.beginFill(0xFFFF00);
-    graphics.drawRect(this.playArea.minX, this.playArea.minY, this.playArea.maxX - this.playArea.minX, this.playArea.maxY - this.playArea.minY);
   }
 
   update(delta: number) {
     this.timer += delta;
+
+    this.conveyor.update(delta);
 
     this.player.container.y += delta * conveyorSpeed;
 
