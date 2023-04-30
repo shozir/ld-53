@@ -1,4 +1,4 @@
-import { Graphics, Texture, TilingSprite } from 'pixi.js';
+import { Container, Texture, TilingSprite } from 'pixi.js';
 import { playAreaHeight, playAreaWidth } from './game';
 import conveyorCenter from './assets/Conveyor_center1.png';
 import conveyorSide from './assets/Conveyor_side1.png';
@@ -21,42 +21,42 @@ export class Conveyor {
   private readonly conveyorLeftTopSprite = new TilingSprite(Texture.from(conveyorTopCorner), 32, 3);
   private timer = 0;
 
-  initialize(graphics: Graphics) {
+  initialize(parent: Container) {
     this.conveyorSprite.anchor.set(.5);
-    graphics.addChild(this.conveyorSprite);
+    parent.addChild(this.conveyorSprite);
 
     this.conveyorRightSprite.anchor.set(0, .5);
     this.conveyorRightSprite.x = playAreaWidth / 2;
-    graphics.addChild(this.conveyorRightSprite);
+    parent.addChild(this.conveyorRightSprite);
 
     this.conveyorLeftSprite.anchor.set(0, .5);
     this.conveyorLeftSprite.x = -playAreaWidth / 2;
     this.conveyorLeftSprite.scale.x = -1;
-    graphics.addChild(this.conveyorLeftSprite);
+    parent.addChild(this.conveyorLeftSprite);
 
     this.conveyorBottomSprite.anchor.set(.5, 0);
     this.conveyorBottomSprite.y = playAreaHeight / 2;
-    graphics.addChild(this.conveyorBottomSprite);
+    parent.addChild(this.conveyorBottomSprite);
 
     this.conveyorTopSprite.anchor.set(.5, 1);
     this.conveyorTopSprite.y = -playAreaHeight / 2;
-    graphics.addChild(this.conveyorTopSprite);
+    parent.addChild(this.conveyorTopSprite);
 
     this.conveyorRightBottomSprite.position.set(playAreaWidth / 2, playAreaHeight / 2);
-    graphics.addChild(this.conveyorRightBottomSprite);
+    parent.addChild(this.conveyorRightBottomSprite);
 
     this.conveyorLeftBottomSprite.position.set(-playAreaWidth / 2, playAreaHeight / 2);
     this.conveyorLeftBottomSprite.scale.x = -1;
-    graphics.addChild(this.conveyorLeftBottomSprite);
+    parent.addChild(this.conveyorLeftBottomSprite);
 
     this.conveyorRightTopSprite.anchor.set(0, 1);
     this.conveyorRightTopSprite.position.set(playAreaWidth / 2, -playAreaHeight / 2);
-    graphics.addChild(this.conveyorRightTopSprite);
+    parent.addChild(this.conveyorRightTopSprite);
 
     this.conveyorLeftTopSprite.anchor.set(0, 1);
     this.conveyorLeftTopSprite.position.set(-playAreaWidth / 2, -playAreaHeight / 2);
     this.conveyorLeftTopSprite.scale.x = -1;
-    graphics.addChild(this.conveyorLeftTopSprite);
+    parent.addChild(this.conveyorLeftTopSprite);
   }
 
   update(delta: number) {

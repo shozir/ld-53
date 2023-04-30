@@ -1,4 +1,4 @@
-import { Bounds, Graphics, IPointData, Sprite } from 'pixi.js';
+import { Bounds, Container, IPointData, Sprite } from 'pixi.js';
 import { playerSize } from './player';
 import box1 from './assets/Box1.png';
 import box2 from './assets/Box2.png';
@@ -12,13 +12,13 @@ export class Package {
   readonly sprite = Sprite.from(Math.random() < .5 ? box1 : box2);
   readonly rotClockwise = Math.random() < .5;
 
-  initialize(graphics: Graphics) {
+  initialize(parent: Container) {
     this.sprite.width = size;
     this.sprite.height = size;
     this.sprite.anchor.set(.5);
     this.sprite.rotation = Math.random() * 2 * Math.PI;
 
-    graphics.addChild(this.sprite);
+    parent.addChild(this.sprite);
   }
 
   update(delta: number) {

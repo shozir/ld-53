@@ -1,4 +1,4 @@
-import { Bounds, Graphics, Text, TextStyle } from 'pixi.js';
+import { Bounds, Container, Graphics, Text, TextStyle } from 'pixi.js';
 import { Player } from './player';
 import { Package } from './package';
 import { Conveyor, speed as conveyorSpeed } from './conveyor';
@@ -20,14 +20,16 @@ export class Game {
   private readonly packageSpawnArea = new Bounds();
   private readonly player = new Player();
   private readonly packages: Package[] = [];
+  private readonly packageContainer = new Container();
   private readonly conveyor = new Conveyor();
 
   private timer = 0;
   private actionDown = false;
+  private heldPackage: Package;
 
-  initialize(graphics: Graphics) {
-    graphics.scale.x = 2;
-    graphics.scale.y = 2;
+  initialize(parent: Container) {
+    parent.scale.x = 2;
+    parent.scale.y = 2;
 
     this.playArea.addPoint({ x: -playAreaWidth / 2, y: -playAreaHeight / 2 });
     this.playArea.addPoint({ x: playAreaWidth / 2, y: -playAreaHeight / 2 });
@@ -39,16 +41,17 @@ export class Game {
     this.packageSpawnArea.addPoint({ x: this.playArea.maxX, y: this.playArea.minY / 2 });
     this.packageSpawnArea.addPoint({ x: this.playArea.minX, y: this.playArea.minY / 2 });
 
-    this.conveyor.initialize(graphics);
+    this.conveyor.initialize(parent);
 
     for (let i = 0; i < 50; ++i) {
       const box = new Package();
-      box.initialize(graphics);
+      box.initialize(this.packageContainer);
       box.spawn(this.playArea);
       this.packages.push(box);
     }
+    parent.addChild(this.packageContainer);
 
-    this.player.initialize(graphics);
+    this.player.initialize(parent);
 
     // graphics.addChild(this.text);
   }
@@ -66,17 +69,6 @@ export class Game {
     if (this.player.container.x > this.playArea.maxX) this.player.container.x = this.playArea.maxX;
     if (this.player.container.y < this.playArea.minY) this.player.container.y = this.playArea.minY;
     if (this.player.container.y > this.playArea.maxY) this.player.container.y = this.playArea.maxY;
-
-    // if (!this.player.container.children.includes(this.package)) {
-    //   const xDiff = this.player.container.x - this.package.x;
-    //   const yDiff = this.player.container.y - this.package.y;
-    //   const sqDist = xDiff * xDiff + yDiff * yDiff;
-    //   if (sqDist < 24 * 24) {
-    //     const dist = Math.sqrt(sqDist);
-    //     this.package.x = this.player.container.x - (xDiff / dist) * 24;
-    //     this.package.y = this.player.container.y - (yDiff / dist) * 24;
-    //   }
-    // }
 
     const remainingColCheckPackages = this.packages.slice();
     for (const box of this.packages) {
@@ -99,22 +91,28 @@ export class Game {
 
   handleInput(input: Input) {
     this.player.handleInput(input);
-    // if (input & Input.Action) {
-    //   if (!this.actionDown) {
-    //     if (this.player.container.children.includes(this.package)) {
-    //       this.packages.addChild(this.package);
-    //       this.package.x = this.player.container.x;
-    //       this.package.y = this.player.container.y -24;
-    //     } else {
-    //       this.player.container.addChild(this.package);
-    //       this.package.x = 0;
-    //       this.package.y = -24;
-    //     }
-    //   }
+    if (input & Input.Action) {
+      if (!this.actionDown) {
+        if (this.heldPackage) {
+          this.packageContainer.addChild(this.heldPackage.sprite);
+          this.packages.push(this.heldPackage);
+          this.heldPackage.sprite.x = this.player.container.x;
+          this.heldPackage.sprite.y = this.player.container.y -24;
+          this.heldPackage = undefined;
+          this.player.carrying = false;
+        } else {
+          this.heldPackage = this.packages.pop();
+          this.player.container.addChild(this.heldPackage.sprite);
+          this.heldPackage.sprite.x = 0;
+          this.heldPackage.sprite.y = -24;
+          this.heldPackage.sprite.rotation = 0;
+          this.player.carrying = true;
+        }
+      }
 
-    //   this.actionDown = true;
-    // } else {
-    //   this.actionDown = false;
-    // }
+      this.actionDown = true;
+    } else {
+      this.actionDown = false;
+    }
   }
 }
