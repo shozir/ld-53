@@ -15,7 +15,7 @@ export const playAreaWidth = 120;
 export const playAreaHeight = 200;
 
 export class Game {
-  private readonly text = new Text('', new TextStyle({ fill: 'white' }));
+  private readonly text = new Text('wasd to move\nspace to pickup/throw', new TextStyle({ fill: 'white', fontFamily: 'Tahoma', fontSize: 12, align: 'center' }));
   private readonly playArea = new Bounds();
   private readonly packageSpawnArea = new Bounds();
   private readonly player = new Player();
@@ -54,7 +54,9 @@ export class Game {
 
     this.player.initialize(parent);
 
-    // graphics.addChild(this.text);
+    this.text.anchor.x = .5;
+    this.text.y = -150;
+    parent.addChild(this.text);
   }
 
   update(delta: number) {
