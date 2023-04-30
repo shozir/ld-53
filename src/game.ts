@@ -19,7 +19,8 @@ export class Game {
   private readonly playArea = new Bounds();
   private readonly packageSpawnArea = new Bounds();
   private readonly player = new Player();
-  private readonly packages: Package[] = [];
+  private readonly conveyorPackages: Package[] = [];
+  private readonly thrownPackages: Package[] = [];
   private readonly packageContainer = new Container();
   private readonly conveyor = new Conveyor();
 
@@ -43,11 +44,11 @@ export class Game {
 
     this.conveyor.initialize(parent);
 
-    for (let i = 0; i < 50; ++i) {
+    for (let i = 0; i < 30; ++i) {
       const box = new Package();
       box.initialize(this.packageContainer);
       box.spawn(this.playArea);
-      this.packages.push(box);
+      this.conveyorPackages.push(box);
     }
     parent.addChild(this.packageContainer);
 
@@ -70,18 +71,32 @@ export class Game {
     if (this.player.container.y < this.playArea.minY) this.player.container.y = this.playArea.minY;
     if (this.player.container.y > this.playArea.maxY) this.player.container.y = this.playArea.maxY;
 
-    const remainingColCheckPackages = this.packages.slice();
-    for (const box of this.packages) {
-      box.sprite.y += delta * conveyorSpeed;
+    const remainingColCheckPackages = this.conveyorPackages.slice();
+    for (const box of this.conveyorPackages) {
       if (!box.boundCheckPlayArea(this.playArea)) {
-        box.spawn(this.packageSpawnArea);
+        box.fall(delta);
+        if (box.sprite.scale.y < .1) {
+          box.spawn(this.packageSpawnArea);
+        }
       } else {
+        box.sprite.y += delta * conveyorSpeed;
         const packageIdx = remainingColCheckPackages.indexOf(box);
         remainingColCheckPackages.splice(packageIdx, 1);
         for (const otherBox of remainingColCheckPackages) {
           box.collisionCheckPackage(delta, otherBox);
         }
         box.collisionCheckPlayer(delta, this.player.container);
+      }
+    }
+
+    for (const box of this.thrownPackages) {
+      box.update(delta);
+
+      if (box.sprite.y > this.playArea.maxY) {
+        box.spawn(this.packageSpawnArea);
+        const idx = this.thrownPackages.indexOf(box);
+        this.thrownPackages.splice(idx, 1);
+        this.conveyorPackages.push(box);
       }
     }
   }
@@ -95,13 +110,15 @@ export class Game {
       if (!this.actionDown) {
         if (this.heldPackage) {
           this.packageContainer.addChild(this.heldPackage.sprite);
-          this.packages.push(this.heldPackage);
+          this.thrownPackages.push(this.heldPackage);
+          // this.packages.push(this.heldPackage);
+          this.heldPackage.throw(this.player.facingLeft);
           this.heldPackage.sprite.x = this.player.container.x;
           this.heldPackage.sprite.y = this.player.container.y -24;
           this.heldPackage = undefined;
           this.player.carrying = false;
         } else {
-          this.heldPackage = this.packages.pop();
+          this.heldPackage = this.conveyorPackages.pop();
           this.player.container.addChild(this.heldPackage.sprite);
           this.heldPackage.sprite.x = 0;
           this.heldPackage.sprite.y = -24;

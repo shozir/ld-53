@@ -47,6 +47,10 @@ export class Player {
   readonly move = new Point();
   carrying = false;
 
+  get facingLeft() {
+    return this.container.scale.x < 0;
+  }
+
   initialize(parent: Container) {
     this.container.addChild(this.idleContainer, this.walkingContainer);
     this.idleContainer.addChild(this.idleFrontSprite, this.idleFrontCarrySprite, this.idleBackSprite, this.idleBackCarrySprite);

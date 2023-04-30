@@ -3,12 +3,15 @@ import { playerSize } from './player';
 import box1 from './assets/Box1.png';
 import box2 from './assets/Box2.png';
 
-const size = 16;
+const size = 24;
 const minPlayerDistance = (playerSize / 2) + (size / 2);
 const colModifier = 20;
 const rotModifier = .5;
 
 export class Package {
+  private thrownVector?: { x: number, y: number };
+  private size = size;
+
   readonly sprite = Sprite.from(Math.random() < .5 ? box1 : box2);
   readonly rotClockwise = Math.random() < .5;
 
@@ -16,12 +19,19 @@ export class Package {
     this.sprite.width = size;
     this.sprite.height = size;
     this.sprite.anchor.set(.5);
-    this.sprite.rotation = Math.random() * 2 * Math.PI;
 
     parent.addChild(this.sprite);
   }
 
   update(delta: number) {
+    if (this.thrownVector) {
+      this.sprite.x += this.thrownVector.x;
+      this.sprite.y += this.thrownVector.y;
+
+      this.thrownVector.y += delta * 20;
+
+      this.sprite.rotation += (this.rotClockwise ? 1 : -1) * delta * rotModifier * 10;
+    }
   }
 
   spawn(spawnBounds: Bounds) {
@@ -29,6 +39,10 @@ export class Package {
     const yRand = Math.random();
     this.sprite.x = (1 - xRand) * spawnBounds.minX + xRand * spawnBounds.maxX;
     this.sprite.y = (1 - yRand) * spawnBounds.minY + yRand * spawnBounds.maxY;
+    this.size = size;
+    this.sprite.width = size;
+    this.sprite.height = size;
+    this.sprite.rotation = Math.random() * 2 * Math.PI;
   }
 
   collisionCheckPackage(delta: number, otherPackage: Package) {
@@ -61,6 +75,16 @@ export class Package {
   }
 
   boundCheckPlayArea(playArea: Bounds) {
-    return !(this.sprite.x < playArea.minX || this.sprite.x > playArea.maxX || this.sprite.y < playArea.minY || this.sprite.y > playArea.maxY);
+    return !(this.sprite.x < playArea.minX - (size / 2) || this.sprite.x > playArea.maxX + (size / 2) || this.sprite.y < playArea.minY - (size / 2) || this.sprite.y > playArea.maxY + (size / 2));
+  }
+
+  fall(delta: number) {
+    this.size -= delta * 30;
+    this.sprite.width = this.size;
+    this.sprite.height = this.size;
+  }
+
+  throw(left: boolean) {
+    this.thrownVector = { x: (left ? -1 : 1) * 10, y: -5 };
   }
 }
