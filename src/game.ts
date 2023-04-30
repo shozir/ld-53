@@ -10,9 +10,12 @@ export enum Input {
   Action = 1 << 4,
 };
 
+const conveyorSpeed = 10;
+
 export class Game {
   private readonly text = new Text('', new TextStyle({ fill: 'white' }));
   private readonly playArea = new Bounds();
+  private readonly packageSpawnArea = new Bounds();
   private readonly player = new Player();
   private readonly packages: Package[] = [];
   private timer = 0;
@@ -26,6 +29,11 @@ export class Game {
     this.playArea.addPoint({ x: 60, y: -100 });
     this.playArea.addPoint({ x: 60, y: 100 });
     this.playArea.addPoint({ x: -60, y: 100 });
+
+    this.packageSpawnArea.addPoint({ x: this.playArea.minX, y: this.playArea.minY });
+    this.packageSpawnArea.addPoint({ x: this.playArea.maxX, y: this.playArea.minY });
+    this.packageSpawnArea.addPoint({ x: this.playArea.maxX, y: this.playArea.minY / 2 });
+    this.packageSpawnArea.addPoint({ x: this.playArea.minX, y: this.playArea.minY / 2 });
 
     for (let i = 0; i < 30; ++i) {
       const box = new Package();
@@ -44,6 +52,9 @@ export class Game {
 
   update(delta: number) {
     this.timer += delta;
+
+    this.player.container.y += delta * conveyorSpeed;
+
     this.player.update(delta);
 
     if (this.player.container.x < this.playArea.minX) this.player.container.x = this.playArea.minX;
@@ -64,8 +75,9 @@ export class Game {
 
     const remainingColCheckPackages = this.packages.slice();
     for (const box of this.packages) {
+      box.sprite.y += delta * conveyorSpeed;
       if (!box.boundCheckPlayArea(this.playArea)) {
-        box.spawn(this.playArea);
+        box.spawn(this.packageSpawnArea);
       } else {
         const packageIdx = remainingColCheckPackages.indexOf(box);
         remainingColCheckPackages.splice(packageIdx, 1);
